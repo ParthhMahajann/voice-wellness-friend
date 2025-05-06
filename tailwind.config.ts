@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				therapy: {
+					primary: '#6366f1', // Indigo
+					secondary: '#a78bfa', // Purple
+					accent: '#c4b5fd', // Light purple
+					light: '#f5f3ff', // Very light purple
+					dark: '#4338ca', // Dark indigo
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +92,31 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'pulse-subtle': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' },
+				},
+				'wave': {
+					'0%': { transform: 'scale(0.8)' },
+					'50%': { transform: 'scale(1.2)' },
+					'100%': { transform: 'scale(0.8)' },
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' },
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-subtle': 'pulse-subtle 2s infinite ease-in-out',
+				'wave': 'wave 1.5s infinite ease-in-out',
+				'float': 'float 3s infinite ease-in-out',
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'therapy-gradient': 'linear-gradient(135deg, #6366f1 0%, #a78bfa 100%)',
 			}
 		}
 	},
