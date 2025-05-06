@@ -32,7 +32,29 @@ const Hero = () => {
           <div className="absolute inset-0 bg-gradient-radial from-therapy-accent/30 to-transparent opacity-70 blur-xl"></div>
           <div className="relative z-10">
             <div className="w-full max-w-3xl mx-auto rounded-2xl overflow-hidden shadow-xl">
-              <img src="https://images.unsplash.com/photo-1541199249251-f713e6145474?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Person using AI therapy companion" className="w-full h-auto" />
+              {/* Animated image replaces static photo */}
+              <div className="relative w-full aspect-video bg-gradient-to-r from-therapy-light to-therapy-accent/30 rounded-2xl overflow-hidden">
+                {/* Floating bubbles animation */}
+                <div className="absolute w-24 h-24 bg-therapy-primary/20 rounded-full top-1/4 left-1/4 animate-float"></div>
+                <div className="absolute w-16 h-16 bg-therapy-secondary/30 rounded-full bottom-1/4 right-1/3 animate-float animation-delay-1000"></div>
+                <div className="absolute w-20 h-20 bg-therapy-accent/40 rounded-full top-1/2 right-1/4 animate-float animation-delay-2000"></div>
+                
+                {/* Central therapy companion visualization */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="relative">
+                    <div className="w-32 h-32 rounded-full bg-therapy-primary/80 flex items-center justify-center animate-pulse-subtle">
+                      <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">
+                        <span className="text-therapy-primary text-2xl font-bold">AI</span>
+                      </div>
+                    </div>
+                    
+                    {/* Sound waves animation */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full border-2 border-white/20 animate-ping opacity-70"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border-2 border-white/10 animate-ping opacity-50 animation-delay-500"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full border-2 border-white/5 animate-ping opacity-30 animation-delay-1000"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

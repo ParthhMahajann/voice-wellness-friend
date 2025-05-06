@@ -1,25 +1,26 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Mic, MessageSquare, TrendingUp } from "lucide-react";
 
 const steps = [
   {
     number: "01",
     title: "Start a Conversation",
     description: "Click the microphone button and start speaking naturally about how you're feeling.",
-    image: "https://images.unsplash.com/photo-1516726817505-f5ed825624d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    icon: Mic,
   },
   {
     number: "02",
     title: "AI Listens & Responds",
     description: "Our AI processes your words and responds with supportive guidance based on therapeutic principles.",
-    image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    icon: MessageSquare,
   },
   {
     number: "03",
     title: "Continue Your Journey",
     description: "Return anytime to continue conversations and track your emotional wellbeing over time.",
-    image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    icon: TrendingUp,
   },
 ];
 
@@ -35,23 +36,40 @@ const HowItWorks = () => {
         </div>
         
         <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {steps.map((step, index) => (
-            <div key={index} className="relative">
-              <div className="rounded-2xl overflow-hidden aspect-video mb-6 shadow-md">
-                <img 
-                  src={step.image} 
-                  alt={step.title} 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/40 to-transparent"></div>
-                <div className="absolute bottom-4 left-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg">
-                  <span className="font-bold text-therapy-primary">{step.number}</span>
+          {steps.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <div key={index} className="relative">
+                <div className="rounded-2xl overflow-hidden aspect-video mb-6 shadow-md relative">
+                  {/* Animated background gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-therapy-light to-therapy-accent/20"></div>
+                  
+                  {/* Animated content */}
+                  <div className="relative h-full w-full flex flex-col items-center justify-center p-6">
+                    {/* Animated icon */}
+                    <div className="mb-4 relative">
+                      <div className="absolute -inset-4 bg-therapy-primary/20 rounded-full animate-pulse opacity-70"></div>
+                      <div className="relative bg-white p-4 rounded-full shadow-lg">
+                        <Icon className="h-8 w-8 text-therapy-primary" />
+                      </div>
+                    </div>
+                    
+                    {/* Animated particles */}
+                    <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-therapy-primary/30 rounded-full animate-float"></div>
+                    <div className="absolute bottom-1/3 right-1/4 w-2 h-2 bg-therapy-secondary/40 rounded-full animate-float animation-delay-700"></div>
+                    <div className="absolute top-1/2 right-1/3 w-4 h-4 bg-therapy-accent/20 rounded-full animate-float animation-delay-1500"></div>
+                  </div>
+                  
+                  {/* Step number */}
+                  <div className="absolute bottom-4 left-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg z-10">
+                    <span className="font-bold text-therapy-primary">{step.number}</span>
+                  </div>
                 </div>
+                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                <p className="text-muted-foreground">{step.description}</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-              <p className="text-muted-foreground">{step.description}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
         
         <div className="text-center">
