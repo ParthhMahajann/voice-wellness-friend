@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -25,6 +24,11 @@ const Header = () => {
             <Link to="/resources">
               <Button variant="link" className={`text-foreground/80 hover:text-therapy-primary ${location.pathname === '/resources' ? 'text-therapy-primary' : ''}`}>
                 Resources
+              </Button>
+            </Link>
+            <Link to="/history">
+              <Button variant="link" className={`text-foreground/80 hover:text-therapy-primary ${location.pathname === '/history' ? 'text-therapy-primary' : ''}`}>
+                History
               </Button>
             </Link>
             <Button variant="link" className="text-foreground/80 hover:text-therapy-primary">
