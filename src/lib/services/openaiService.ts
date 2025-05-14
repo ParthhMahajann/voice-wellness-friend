@@ -47,7 +47,7 @@ export const openaiService = {
 
       // Generate response from OpenAI
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo',
         messages,
         temperature: 0.7,
         max_tokens: 150,
@@ -75,7 +75,7 @@ export const openaiService = {
 
       // Analyze mood using OpenAI
       const moodAnalysis = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',

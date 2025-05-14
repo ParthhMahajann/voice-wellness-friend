@@ -96,6 +96,7 @@ export function Profile() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Enter your password"
+                autoComplete="current-password"
               />
             </div>
 
