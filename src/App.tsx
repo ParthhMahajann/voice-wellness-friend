@@ -8,11 +8,19 @@ import { Resources } from './pages/Resources';
 import { Profile } from './pages/Profile';
 import { Layout } from './components/common/Layout';
 
+// Add future flags for React Router v7 compatibility
+const router = {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true
+  }
+};
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
+        <Router future={router.future}>
           <Layout>
             <Routes>
               <Route path="/" element={<Home />} />

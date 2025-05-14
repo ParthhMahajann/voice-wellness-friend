@@ -1,14 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-
-type User = {
-  id: string;
-  email: string;
-  name: string;
-  preferences: {
-    theme: 'light' | 'dark' | 'system';
-    notifications: boolean;
-  };
-};
+import { supabase } from '../../lib/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 type AuthContextType = {
   user: User | null;
@@ -28,12 +20,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for existing session
     const checkSession = async () => {
       try {
-        const session = localStorage.getItem('session');
-        if (session) {
-          // TODO: Validate session with backend
-          const userData = JSON.parse(session);
-          setUser(userData);
-        }
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        setUser(session?.user ?? null);
       } catch (error) {
         console.error('Session check failed:', error);
       } finally {
@@ -42,22 +31,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      // TODO: Implement actual authentication
-      const mockUser: User = {
-        id: '1',
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        name: 'Test User',
-        preferences: {
-          theme: 'system',
-          notifications: true,
-        },
-      };
-      setUser(mockUser);
-      localStorage.setItem('session', JSON.stringify(mockUser));
+        password,
+      });
+      if (error) throw error;
     } catch (error) {
       console.error('Sign in failed:', error);
       throw error;
@@ -66,9 +57,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // TODO: Implement actual sign out
-      setUser(null);
-      localStorage.removeItem('session');
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     } catch (error) {
       console.error('Sign out failed:', error);
       throw error;
@@ -77,18 +67,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      // TODO: Implement actual registration
-      const mockUser: User = {
-        id: '1',
+      const { error } = await supabase.auth.signUp({
         email,
-        name,
-        preferences: {
-          theme: 'system',
-          notifications: true,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
         },
-      };
-      setUser(mockUser);
-      localStorage.setItem('session', JSON.stringify(mockUser));
+      });
+      if (error) throw error;
     } catch (error) {
       console.error('Sign up failed:', error);
       throw error;

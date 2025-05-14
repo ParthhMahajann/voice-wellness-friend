@@ -1,73 +1,68 @@
-# Welcome to your Lovable project
+# Voice Wellness Friend
 
-## Project info
+**Author:** Parth Mahajan
 
-**URL**: https://lovable.dev/projects/7d69950c-0c85-4066-a81c-00e3afba47a2
+## Project Description
+Voice Wellness Friend is an innovative mental health companion web application designed to support users on their wellness journey. Leveraging the power of voice recognition, AI-driven therapy sessions, and a curated set of resources, this app provides a safe, interactive, and user-friendly environment for individuals seeking mental health support. With features like real-time therapy, emergency resources, user profiles, and analytics, Voice Wellness Friend aims to make mental wellness accessible, engaging, and effective for everyone.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## Tech Stack
+- **Frontend:** React, TypeScript, Vite
+- **UI:** shadcn-ui, Tailwind CSS
+- **State Management:** React Context, React Query
+- **Authentication & Backend:** Supabase
+- **APIs:** OpenAI (for AI-driven features)
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7d69950c-0c85-4066-a81c-00e3afba47a2) and start prompting.
+## Features & Use Cases
+- **Voice Recognition:** Interact with the app using your voice for a hands-free experience.
+- **AI-Driven Therapy Sessions:** Personalized, interactive therapy powered by OpenAI.
+- **Resource Hub:** Access curated mental health resources and emergency contacts.
+- **User Profiles:** Manage your wellness journey and track progress.
+- **Session Analytics:** Gain insights into your mental health sessions.
+- **Secure Authentication:** Safe and private user experience with Supabase Auth.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## Getting Started (Local Installation)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. **Clone the repository:**
+   ```sh
+   git clone <YOUR_GIT_URL>
+   cd <YOUR_PROJECT_NAME>
+   ```
+2. **Install dependencies:**
+   ```sh
+   npm install
+   ```
+3. **Set up environment variables:**
+   - Create a `.env` file in the root directory.
+   - Add the following (replace with your actual keys):
+     ```env
+     VITE_SUPABASE_URL=your-supabase-url
+     VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+     VITE_OPENAI_API_KEY=your-openai-api-key
+     # ...other config variables as needed
+     ```
+4. **Start the development server:**
+   ```sh
+   npm run dev
+   ```
+5. **Open your browser:**
+   - Visit [http://localhost:5173](http://localhost:5173) (or the port shown in your terminal)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## Deployment
+- You can deploy this project using Vercel, Netlify, or any static hosting provider.
+- For Lovable users: Open [Lovable](https://lovable.dev/projects/7d69950c-0c85-4066-a81c-00e3afba47a2) and click on Share -> Publish.
+- For custom domains, follow your hosting provider's instructions.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Contact
+For questions, feedback, or contributions, please contact **Parth Mahajan**.
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/7d69950c-0c85-4066-a81c-00e3afba47a2) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---

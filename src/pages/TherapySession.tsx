@@ -61,13 +61,13 @@ export function TherapySession() {
           user_id: user.id,
           start_time: new Date().toISOString(),
           duration: 0,
-          messages: [],
-          mood_history: ['neutral'],
+          mood_history: ['neutral']
         })
         .select()
         .single();
 
       if (error) {
+        console.error('Session creation error:', error);
         toast('Failed to start session. Please try again.', 'error');
         return;
       }
@@ -84,13 +84,18 @@ export function TherapySession() {
       setMessages([initialMessage]);
 
       // Save initial message to Supabase
-      await supabase.from('messages').insert({
+      const { error: messageError } = await supabase.from('messages').insert({
         session_id: session.id,
         user_id: user.id,
         content: initialMessage.text,
         role: 'assistant',
         timestamp: initialMessage.timestamp.toISOString(),
       });
+
+      if (messageError) {
+        console.error('Message creation error:', messageError);
+        toast('Failed to initialize conversation. Please try again.', 'error');
+      }
     };
 
     initializeSession();
