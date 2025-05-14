@@ -2,15 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { Mic, MicOff, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, AlertCircle, Volume2, VolumeX } from 'lucide-react';
 import { EmergencyResources } from '../components/therapy/EmergencyResources';
 import { SessionProgress } from '../components/therapy/SessionProgress';
 import SessionSummary from '../components/therapy/SessionSummary';
 import { useVoiceRecognition } from '../hooks/useVoiceRecognition';
 import { useAuth } from '../components/auth/AuthProvider';
 import { toast } from '../components/common/Toaster';
-import { aiService } from '../lib/services/aiService';
-import { sessionStorage } from '../lib/services/sessionStorage';
+import { openaiService } from '../lib/services/openaiService';
+import { supabase } from '../lib/supabase/client';
 
 interface Message {
   id: string;
@@ -30,7 +30,9 @@ export function TherapySession() {
   const [sessionDuration, setSessionDuration] = useState(0);
   const [sessionId, setSessionId] = useState<string>('');
   const [currentMood, setCurrentMood] = useState('neutral');
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const {
     isListening,
@@ -38,6 +40,7 @@ export function TherapySession() {
     startListening,
     stopListening,
     error,
+    isSupported,
   } = useVoiceRecognition({
     onError: (errorMessage) => {
       toast(errorMessage, 'error');
@@ -50,26 +53,59 @@ export function TherapySession() {
       return;
     }
 
-    // Initialize new session
-    const session = sessionStorage.createSession();
-    setSessionId(session.id);
+    // Initialize new session in Supabase
+    const initializeSession = async () => {
+      const { data: session, error } = await supabase
+        .from('sessions')
+        .insert({
+          user_id: user.id,
+          start_time: new Date().toISOString(),
+          duration: 0,
+          messages: [],
+          mood_history: ['neutral'],
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast('Failed to start session. Please try again.', 'error');
+        return;
+      }
+
+      setSessionId(session.id);
+
+      // Add initial greeting
+      const initialMessage: Message = {
+        id: '1',
+        text: "Hello! I'm here to listen and support you. How are you feeling today?",
+        sender: 'ai',
+        timestamp: new Date(),
+      };
+      setMessages([initialMessage]);
+
+      // Save initial message to Supabase
+      await supabase.from('messages').insert({
+        session_id: session.id,
+        user_id: user.id,
+        content: initialMessage.text,
+        role: 'assistant',
+        timestamp: initialMessage.timestamp.toISOString(),
+      });
+    };
+
+    initializeSession();
 
     // Update session duration every second
     const durationInterval = setInterval(() => {
       const duration = Date.now() - sessionStartTime;
       setSessionDuration(duration);
-      sessionStorage.updateSession(sessionId, { duration });
+      
+      // Update duration in Supabase
+      supabase
+        .from('sessions')
+        .update({ duration })
+        .eq('id', sessionId);
     }, 1000);
-
-    // Add initial greeting
-    const initialMessage: Message = {
-      id: '1',
-      text: "Hello! I'm here to listen and support you. How are you feeling today?",
-      sender: 'ai',
-      timestamp: new Date(),
-    };
-    setMessages([initialMessage]);
-    sessionStorage.addMessage(sessionId, initialMessage);
 
     return () => {
       clearInterval(durationInterval);
@@ -80,8 +116,27 @@ export function TherapySession() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const speakResponse = async (text: string) => {
+    try {
+      setIsSpeaking(true);
+      const audioBuffer = await openaiService.generateSpeech(text);
+      const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      if (audioRef.current) {
+        audioRef.current.src = audioUrl;
+        await audioRef.current.play();
+      }
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      toast('Failed to play audio response', 'error');
+    } finally {
+      setIsSpeaking(false);
+    }
+  };
+
   const handleUserInput = async (input: string) => {
-    if (!input.trim()) return;
+    if (!input.trim() || !user || !sessionId) return;
 
     setIsProcessing(true);
     try {
@@ -93,26 +148,28 @@ export function TherapySession() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, userMessage]);
-      sessionStorage.addMessage(sessionId, userMessage);
 
       // Get AI response
-      const response = aiService.generateResponse(input);
+      const { text: response, mood } = await openaiService.generateResponse(
+        input,
+        sessionId,
+        user.id
+      );
       
-      // Update mood if provided
-      if (response.mood) {
-        setCurrentMood(response.mood);
-        sessionStorage.updateMood(sessionId, response.mood);
-      }
+      // Update mood
+      setCurrentMood(mood);
 
       // Add AI response to the conversation
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: response.text,
+        text: response,
         sender: 'ai',
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
-      sessionStorage.addMessage(sessionId, aiMessage);
+
+      // Speak the response
+      await speakResponse(response);
     } catch (error) {
       toast('Failed to process your message. Please try again.', 'error');
     } finally {
@@ -136,20 +193,27 @@ export function TherapySession() {
     if (messages.length > 0) {
       setShowSummary(true);
     } else {
-      sessionStorage.deleteSession(sessionId);
+      supabase.from('sessions').delete().eq('id', sessionId);
       navigate('/');
     }
   };
 
-  const handleSaveFeedback = (feedback: {
+  const handleSaveFeedback = async (feedback: {
     rating: number;
     helpful: boolean;
     comments: string;
   }) => {
-    sessionStorage.endSession(sessionId, {
-      ...feedback,
-      timestamp: Date.now(),
-    });
+    await supabase
+      .from('sessions')
+      .update({
+        end_time: new Date().toISOString(),
+        feedback: {
+          ...feedback,
+          timestamp: new Date().toISOString(),
+        },
+      })
+      .eq('id', sessionId);
+    
     navigate('/');
   };
 
@@ -166,6 +230,9 @@ export function TherapySession() {
 
   return (
     <div className="space-y-8">
+      {/* Hidden audio element */}
+      <audio ref={audioRef} className="hidden" />
+
       {/* Session Controls */}
       <div className="flex justify-between items-center">
         <Button
@@ -235,31 +302,69 @@ export function TherapySession() {
           )}
 
           {/* Voice Controls */}
-          <div className="flex justify-center">
-            <Button
-              size="lg"
-              variant={isListening ? 'destructive' : 'default'}
-              onClick={toggleListening}
-              className="w-16 h-16 rounded-full"
-              disabled={isProcessing}
-            >
-              {isListening ? (
-                <MicOff className="w-6 h-6" />
-              ) : (
-                <Mic className="w-6 h-6" />
-              )}
-            </Button>
+          <div className="flex justify-center gap-4">
+            {!isSupported ? (
+              <div className="text-center text-muted-foreground">
+                <p>Voice recognition is not supported in your browser.</p>
+                <p className="text-sm">Please use Chrome, Edge, or Safari.</p>
+              </div>
+            ) : (
+              <>
+                <Button
+                  size="lg"
+                  variant={isListening ? 'destructive' : 'default'}
+                  onClick={toggleListening}
+                  className="w-16 h-16 rounded-full"
+                  disabled={isProcessing}
+                >
+                  {isListening ? (
+                    <MicOff className="w-6 h-6" />
+                  ) : (
+                    <Mic className="w-6 h-6" />
+                  )}
+                </Button>
+                <Button
+                  size="lg"
+                  variant={isSpeaking ? 'destructive' : 'default'}
+                  onClick={() => {
+                    if (audioRef.current) {
+                      if (isSpeaking) {
+                        audioRef.current.pause();
+                        setIsSpeaking(false);
+                      } else {
+                        audioRef.current.play();
+                        setIsSpeaking(true);
+                      }
+                    }
+                  }}
+                  className="w-16 h-16 rounded-full"
+                  disabled={!messages.length || isProcessing}
+                >
+                  {isSpeaking ? (
+                    <VolumeX className="w-6 h-6" />
+                  ) : (
+                    <Volume2 className="w-6 h-6" />
+                  )}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </Card>
 
       {/* Session Status */}
       <div className="text-center text-sm text-muted-foreground">
-        {isProcessing
-          ? 'Processing...'
-          : isListening
-          ? 'Listening...'
-          : 'Click the microphone to start speaking'}
+        {!isSupported ? (
+          'Voice recognition is not supported'
+        ) : isProcessing ? (
+          'Processing...'
+        ) : isListening ? (
+          'Listening...'
+        ) : isSpeaking ? (
+          'Speaking...'
+        ) : (
+          'Click the microphone to start speaking'
+        )}
       </div>
 
       {/* Emergency Resources Modal */}

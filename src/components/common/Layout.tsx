@@ -19,13 +19,13 @@ export function Layout({ children }: LayoutProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
+      <nav className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-lg">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 justify-between">
             <div className="flex">
               <div className="flex flex-shrink-0 items-center">
-                <Link to="/" className="text-xl font-bold">
+                <Link to="/" className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
                   Voice Wellness Friend
                 </Link>
               </div>
@@ -34,10 +34,10 @@ export function Layout({ children }: LayoutProps) {
                   <Link
                     key={item.href}
                     to={item.href}
-                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${
+                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium transition-all duration-200 ${
                       location.pathname === item.href
                         ? 'border-primary text-foreground'
-                        : 'border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground'
+                        : 'border-transparent text-muted-foreground hover:border-primary/50 hover:text-foreground'
                     }`}
                   >
                     {item.name}
@@ -45,11 +45,11 @@ export function Layout({ children }: LayoutProps) {
                 ))}
               </div>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
               <select
                 value={theme}
                 onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'system')}
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="rounded-lg border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200"
                 aria-label="Select theme"
               >
                 <option value="light">Light</option>
@@ -59,14 +59,14 @@ export function Layout({ children }: LayoutProps) {
               {user ? (
                 <button
                   onClick={() => signOut()}
-                  className="ml-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-all duration-200 hover:shadow-md"
                 >
                   Sign Out
                 </button>
               ) : (
                 <Link
                   to="/profile"
-                  className="ml-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-all duration-200 hover:shadow-md"
                 >
                   Sign In
                 </Link>
@@ -76,12 +76,12 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {children}
       </main>
 
-      <footer className="border-t">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <footer className="border-t border-border/40 bg-background/80 backdrop-blur-lg">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()} Voice Wellness Friend. All rights reserved.
           </p>

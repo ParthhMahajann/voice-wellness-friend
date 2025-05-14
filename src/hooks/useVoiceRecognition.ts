@@ -8,20 +8,35 @@ export function useVoiceRecognition({ onError }: UseVoiceRecognitionProps = {}) 
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isSupported, setIsSupported] = useState(false);
 
-  const recognition = typeof window !== 'undefined'
+  // Check for browser support
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setIsSupported(!!SpeechRecognition);
+    
+    if (!SpeechRecognition) {
+      const errorMessage = 'Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.';
+      setError(errorMessage);
+      onError?.(errorMessage);
+    }
+  }, [onError]);
+
+  const recognition = isSupported
     ? new (window.SpeechRecognition || window.webkitSpeechRecognition)()
     : null;
 
   useEffect(() => {
-    if (!recognition) {
-      setError('Speech recognition is not supported in your browser.');
-      return;
-    }
+    if (!recognition) return;
 
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setError(null);
+    };
 
     recognition.onresult = (event) => {
       const current = event.resultIndex;
@@ -30,7 +45,26 @@ export function useVoiceRecognition({ onError }: UseVoiceRecognitionProps = {}) 
     };
 
     recognition.onerror = (event) => {
-      const errorMessage = `Error occurred in recognition: ${event.error}`;
+      let errorMessage = 'Error occurred in recognition';
+      
+      switch (event.error) {
+        case 'not-allowed':
+        case 'permission-denied':
+          errorMessage = 'Microphone access was denied. Please allow microphone access in your browser settings.';
+          break;
+        case 'no-speech':
+          errorMessage = 'No speech was detected. Please try speaking again.';
+          break;
+        case 'audio-capture':
+          errorMessage = 'No microphone was found. Please ensure your microphone is properly connected.';
+          break;
+        case 'network':
+          errorMessage = 'Network error occurred. Please check your internet connection.';
+          break;
+        default:
+          errorMessage = `Error occurred in recognition: ${event.error}`;
+      }
+      
       setError(errorMessage);
       onError?.(errorMessage);
       setIsListening(false);
@@ -41,22 +75,37 @@ export function useVoiceRecognition({ onError }: UseVoiceRecognitionProps = {}) 
     };
 
     return () => {
-      recognition.abort();
+      if (isListening) {
+        recognition.abort();
+      }
     };
-  }, [recognition, onError]);
+  }, [recognition, isListening, onError]);
 
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (!recognition) {
-      setError('Speech recognition is not supported in your browser.');
+      const errorMessage = 'Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.';
+      setError(errorMessage);
+      onError?.(errorMessage);
       return;
     }
 
     try {
+      // Request microphone permission
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop()); // Stop the stream after getting permission
+      
       recognition.start();
-      setIsListening(true);
-      setError(null);
     } catch (err) {
-      const errorMessage = 'Error starting speech recognition';
+      let errorMessage = 'Error starting speech recognition';
+      
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError') {
+          errorMessage = 'Microphone access was denied. Please allow microphone access in your browser settings.';
+        } else if (err.name === 'NotFoundError') {
+          errorMessage = 'No microphone was found. Please ensure your microphone is properly connected.';
+        }
+      }
+      
       setError(errorMessage);
       onError?.(errorMessage);
     }
@@ -79,6 +128,7 @@ export function useVoiceRecognition({ onError }: UseVoiceRecognitionProps = {}) 
     isListening,
     transcript,
     error,
+    isSupported,
     startListening,
     stopListening,
   };
