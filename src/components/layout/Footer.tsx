@@ -1,5 +1,5 @@
-
 import React from "react";
+import Link from "next/link";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -18,9 +18,9 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold text-lg mb-3">Important Links</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Ethical Guidelines</a></li>
+              <li><Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link></li>
+              <li><Link href="/ethics" className="text-muted-foreground hover:text-foreground transition-colors">Ethical Guidelines</Link></li>
             </ul>
           </div>
           

@@ -1,4 +1,7 @@
-import { Link, useLocation } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../auth/AuthProvider';
 import { useTheme } from './ThemeProvider';
 
@@ -9,7 +12,7 @@ type LayoutProps = {
 export function Layout({ children }: LayoutProps) {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
-  const location = useLocation();
+  const pathname = usePathname();
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -25,7 +28,7 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex h-16 justify-between">
             <div className="flex">
               <div className="flex flex-shrink-0 items-center">
-                <Link to="/" className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+                <Link href="/" className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
                   Voice Wellness Friend
                 </Link>
               </div>
@@ -33,9 +36,9 @@ export function Layout({ children }: LayoutProps) {
                 {navigation.map((item) => (
                   <Link
                     key={item.href}
-                    to={item.href}
+                    href={item.href}
                     className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium transition-all duration-200 ${
-                      location.pathname === item.href
+                      pathname === item.href
                         ? 'border-primary text-foreground'
                         : 'border-transparent text-muted-foreground hover:border-primary/50 hover:text-foreground'
                     }`}
@@ -65,7 +68,7 @@ export function Layout({ children }: LayoutProps) {
                 </button>
               ) : (
                 <Link
-                  to="/profile"
+                  href="/profile"
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-all duration-200 hover:shadow-md"
                 >
                   Sign In
