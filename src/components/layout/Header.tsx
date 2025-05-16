@@ -1,15 +1,18 @@
+'use client';
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Link, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
   const isMobile = useIsMobile();
-  const location = useLocation();
+  const pathname = usePathname();
   
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between">
-      <Link to="/" className="flex items-center gap-2">
+      <Link href="/" className="flex items-center gap-2">
         <div className="w-10 h-10 rounded-full therapy-gradient flex items-center justify-center">
           <span className="text-white font-bold">AI</span>
         </div>
@@ -21,13 +24,13 @@ const Header = () => {
       <nav className="flex items-center gap-4">
         {!isMobile && (
           <>
-            <Link to="/resources">
-              <Button variant="link" className={`text-foreground/80 hover:text-therapy-primary ${location.pathname === '/resources' ? 'text-therapy-primary' : ''}`}>
+            <Link href="/resources">
+              <Button variant="link" className={`text-foreground/80 hover:text-therapy-primary ${pathname === '/resources' ? 'text-therapy-primary' : ''}`}>
                 Resources
               </Button>
             </Link>
-            <Link to="/history">
-              <Button variant="link" className={`text-foreground/80 hover:text-therapy-primary ${location.pathname === '/history' ? 'text-therapy-primary' : ''}`}>
+            <Link href="/history">
+              <Button variant="link" className={`text-foreground/80 hover:text-therapy-primary ${pathname === '/history' ? 'text-therapy-primary' : ''}`}>
                 History
               </Button>
             </Link>
@@ -36,7 +39,7 @@ const Header = () => {
             </Button>
           </>
         )}
-        <Link to="/session">
+        <Link href="/session">
           <Button className="therapy-button">Get Started</Button>
         </Link>
       </nav>

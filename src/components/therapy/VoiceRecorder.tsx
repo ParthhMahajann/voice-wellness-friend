@@ -1,108 +1,69 @@
+'use client';
 
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, Square, Send } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Mic, Square } from "lucide-react";
+import { VoiceRecorderProps } from '@/types/therapy';
 
-interface VoiceRecorderProps {
-  onAudioRecorded: (audioBlob: Blob) => void;
-}
-
-const VoiceRecorder = ({ onAudioRecorded }: VoiceRecorderProps) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
+export function VoiceRecorder({
+  onRecordingComplete,
+  isRecording,
+  onStartRecording,
+  onStopRecording,
+}: VoiceRecorderProps) {
+  const [error, setError] = useState<Error | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const { toast } = useToast();
+  const chunksRef = useRef<Blob[]>([]);
 
   const startRecording = async () => {
     try {
-      audioChunksRef.current = [];
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
-      
+      chunksRef.current = [];
+
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
+          chunksRef.current.push(e.data);
         }
       };
-      
+
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        onAudioRecorded(audioBlob);
-        
-        // Stop all tracks to release the microphone
+        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        onRecordingComplete(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
-      
+
       mediaRecorder.start();
-      setIsRecording(true);
-      setRecordingTime(0);
-      
-      // Start timer
-      timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
-      
-    } catch (error) {
-      console.error("Error accessing microphone:", error);
-      toast({
-        title: "Microphone Access Denied",
-        description: "Please allow microphone access to use voice features.",
-        variant: "destructive",
-      });
+      onStartRecording();
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to start recording'));
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+      onStopRecording();
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const secs = (seconds % 60).toString().padStart(2, '0');
-    return `${mins}:${secs}`;
-  };
-
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative flex items-center justify-center mb-4">
-        {isRecording && (
-          <div className="absolute -inset-4">
-            <div className="w-full h-full rounded-full bg-therapy-primary/20 animate-pulse-subtle" />
-          </div>
-        )}
-        <Button
-          className={`rounded-full w-16 h-16 ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'therapy-gradient'}`}
-          onClick={isRecording ? stopRecording : startRecording}
-        >
-          {isRecording ? <Square className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
-        </Button>
-      </div>
-      
-      {isRecording && (
-        <div className="flex items-center">
-          <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse mr-2" />
-          <span className="text-sm font-medium">{formatTime(recordingTime)}</span>
-        </div>
+    <div className="flex flex-col items-center gap-4">
+      {error && (
+        <p className="text-red-500 text-sm">{error.message}</p>
       )}
-      
-      <p className="text-sm text-muted-foreground mt-2">
-        {isRecording ? "Recording... Tap to stop" : "Tap to start speaking"}
+      <Button
+        size="lg"
+        variant={isRecording ? "destructive" : "default"}
+        onClick={isRecording ? stopRecording : startRecording}
+        className="rounded-full w-16 h-16"
+      >
+        {isRecording ? <Square className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+      </Button>
+      <p className="text-sm text-muted-foreground">
+        {isRecording ? 'Recording...' : 'Click to start recording'}
       </p>
     </div>
   );
-};
-
-export default VoiceRecorder;
+}
