@@ -10,7 +10,7 @@ type LayoutProps = {
 };
 
 export function Layout({ children }: LayoutProps) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
 
@@ -20,6 +20,15 @@ export function Layout({ children }: LayoutProps) {
     { name: 'Resources', href: '/resources' },
     { name: 'Profile', href: '/profile' },
   ];
+
+  // Show a loading state while auth is initializing
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-background/95">
+        <div className="animate-pulse text-primary">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
