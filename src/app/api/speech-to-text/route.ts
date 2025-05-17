@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { SpeechClient } from '@google-cloud/speech';
+
+const speechClient = new SpeechClient({
+  credentials: {
+    client_email: process.env.NEXT_PUBLIC_DIALOGFLOW_CLIENT_EMAIL,
+    private_key: process.env.NEXT_PUBLIC_DIALOGFLOW_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  },
+});
 
 export async function POST(request: Request) {
   try {
@@ -23,29 +31,30 @@ export async function POST(request: Request) {
       );
     }
 
-    // Convert audio to text using OpenAI's Whisper API
+    // Convert audio to text using Google Cloud Speech-to-Text
     const buffer = await audioFile.arrayBuffer();
-    const base64Audio = Buffer.from(buffer).toString('base64');
+    const audioBytes = Buffer.from(buffer).toString('base64');
 
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
+    const [response] = await speechClient.recognize({
+      audio: {
+        content: audioBytes,
       },
-      body: JSON.stringify({
-        file: base64Audio,
-        model: 'whisper-1',
-        response_format: 'json',
-      }),
+      config: {
+        encoding: 'WEBM_OPUS',
+        sampleRateHertz: 48000,
+        languageCode: 'en-US',
+      },
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to transcribe audio');
+    const transcription = response.results
+      ?.map(result => result.alternatives?.[0]?.transcript)
+      .join('\n');
+
+    if (!transcription) {
+      throw new Error('No transcription generated');
     }
 
-    const data = await response.json();
-    return NextResponse.json({ text: data.text });
+    return NextResponse.json({ text: transcription });
   } catch (error) {
     console.error('Speech to text error:', error);
     return NextResponse.json(
