@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { TextToSpeechClient } from '@google-cloud/text-to-speech';
+
+const ttsClient = new TextToSpeechClient({
+  credentials: {
+    client_email: process.env.NEXT_PUBLIC_DIALOGFLOW_CLIENT_EMAIL,
+    private_key: process.env.NEXT_PUBLIC_DIALOGFLOW_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  },
+});
 
 export async function GET(request: Request) {
   try {
@@ -23,32 +31,22 @@ export async function GET(request: Request) {
       );
     }
 
-    // Convert text to speech using OpenAI's TTS API
-    const response = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'tts-1',
-        input: text,
-        voice: 'alloy',
-      }),
+    // Convert text to speech using Google Cloud Text-to-Speech
+    const [response] = await ttsClient.synthesizeSpeech({
+      input: { text },
+      voice: { languageCode: 'en-US', ssmlGender: 'NEUTRAL' },
+      audioConfig: { audioEncoding: 'MP3' },
     });
 
-    if (!response.ok) {
+    if (!response.audioContent) {
       throw new Error('Failed to generate speech');
     }
 
-    // Get the audio data
-    const audioData = await response.arrayBuffer();
-
     // Return the audio data with appropriate headers
-    return new NextResponse(audioData, {
+    return new NextResponse(response.audioContent, {
       headers: {
         'Content-Type': 'audio/mpeg',
-        'Content-Length': audioData.byteLength.toString(),
+        'Content-Length': response.audioContent.length.toString(),
       },
     });
   } catch (error) {
