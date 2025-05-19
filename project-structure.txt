@@ -1,0 +1,49 @@
+voice-wellness-friend/
+├── .git/
+├── .next/
+├── node_modules/
+├── public/
+├── scripts/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── history/
+│   │   ├── profile/
+│   │   ├── resources/
+│   │   ├── session/
+│   │   ├── error.tsx
+│   │   ├── layout.tsx
+│   │   ├── loading.tsx
+│   │   ├── not-found.tsx
+│   │   └── page.tsx
+│   ├── components/
+│   │   ├── auth/
+│   │   ├── common/
+│   │   ├── home/
+│   │   ├── layout/
+│   │   ├── therapy/
+│   │   └── ui/
+│   ├── hooks/
+│   ├── lib/
+│   ├── pages/
+│   ├── styles/
+│   │   └── index.css
+│   └── types/
+│       ├── speech.d.ts
+│       └── therapy.ts
+├── .gitignore
+├── bun.lockb
+├── components.json
+├── eslint.config.js
+├── index.html
+├── next-env.d.ts
+├── next.config.js
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── README.md
+├── tailwind.config.js
+├── tailwind.config.ts
+├── tsconfig.app.json
+├── tsconfig.json
+└── tsconfig.node.json 
